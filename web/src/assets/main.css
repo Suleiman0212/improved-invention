@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@source "../../src";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: "JetBrains Mono", ui-monospace, monospace;
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-terminal: var(--terminal);
+  --color-comment: var(--comment);
+  --color-keyword: var(--keyword);
+}
+
+:root {
+  --radius: 0.25rem;
+  --background: oklch(0.145 0.01 160);
+  --foreground: oklch(0.9 0.02 150);
+  --card: oklch(0.18 0.012 160);
+  --card-foreground: oklch(0.9 0.02 150);
+  --popover: oklch(0.18 0.012 160);
+  --popover-foreground: oklch(0.9 0.02 150);
+  --primary: oklch(0.82 0.21 145);
+  --primary-foreground: oklch(0.15 0.02 160);
+  --secondary: oklch(0.22 0.015 160);
+  --secondary-foreground: oklch(0.9 0.02 150);
+  --muted: oklch(0.22 0.015 160);
+  --muted-foreground: oklch(0.6 0.03 155);
+  --accent: oklch(0.25 0.04 150);
+  --accent-foreground: oklch(0.85 0.2 145);
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.3 0.03 155);
+  --input: oklch(0.3 0.03 155);
+  --ring: oklch(0.82 0.21 145);
+  --terminal: oklch(0.11 0.008 160);
+  --comment: oklch(0.5 0.03 155);
+  --keyword: oklch(0.78 0.14 195);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-mono);
+    background-image:
+      linear-gradient(oklch(0.82 0.21 145 / 4%) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.82 0.21 145 / 4%) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  ::selection {
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+  }
+}
+
+/* Кастомные утилиты */
+@utility glow {
+  text-shadow: 0 0 12px oklch(0.82 0.21 145 / 55%);
+}
+
+@utility glow-box {
+  box-shadow: 0 0 0 1px var(--color-primary), 0 0 24px oklch(0.82 0.21 145 / 25%);
+}
+
+@utility cursor-blink {
+  &::after {
+    content: "▋";
+    margin-left: 2px;
+    color: var(--color-primary);
+    animation: blink 1s steps(1) infinite;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.random-address {
+  letter-spacing: 2px;
+  font-size: 17px;
+}
+.random-address span {
+  display: inline-block;
+  font-family: cursive;
+}
+
+.random-address span:nth-child(2n) {
+  transform: translateY(-2px) rotate(-6deg);
+  opacity: 0.9;
+}
+
+.random-address span:nth-child(3n) {
+  transform: translateY(1px) rotate(8deg);
+  letter-spacing: 2px;
+  color: #00ff66;
+  opacity: 0.9;
+}
+
+.random-address span:nth-child(5n) {
+  transform: translateY(-2px) rotate(-12deg);
+  filter: blur(0.3px);
+}

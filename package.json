@@ -1,0 +1,23 @@
+{
+  "name": "jana-address-parser",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Локальный парсер произвольных адресных строк (RU/KZ) без внешних API",
+  "type": "module",
+  "main": "src/parser.js",
+  "scripts": {
+    "parse": "node src/cli.js",
+    "repl": "node src/repl.js",
+    "serve": "node server/app.js",
+    "build:web": "npm --prefix web install && npm --prefix web run build",
+    "dev:web": "npm --prefix web run dev",
+    "eval": "node scripts/evaluate.js",
+    "build:kato": "node scripts/build_kato.js",
+    "fetch:osm": "node scripts/fetch_osm.js",
+    "build:gazetteer": "node scripts/build_gazetteer.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

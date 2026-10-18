@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        # REBUILD_KATO: "1" — пересобрать справочник КАТО из stat.gov.kz на этапе build.
+        REBUILD_KATO: "0"
+    image: jana-address:latest
+    container_name: jana-address
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      HOST: "0.0.0.0"
+    restart: unless-stopped

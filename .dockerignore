@@ -1,0 +1,14 @@
+# Версии
+.git
+.gitignore
+node_modules
+**/node_modules
+npm-debug.log*
+
+# Документация в рантайме не нужна
+README.md
+ОПИСАНИЕ.md
+
+# Прочее
+.DS_Store
+*.log
