@@ -10,7 +10,7 @@
             </div>
 
             <template v-else-if="data">
-                <div class="mb-3 flex flex-wrap items-center gap-3 text-xs">
+                <div class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
                     <button @click="download" :class="btnClass">download json</button>
 
                     <button
@@ -18,7 +18,7 @@
                         @click="view = view === 'table' ? 'json' : 'table'"
                         class="cursor-pointer text-comment transition hover:text-primary"
                     >
-                        // {{ view === 'table' ? 'показать как JSON' : 'показать таблицу' }}
+                        // {{ view === 'table' ? 'показать как JSON' : 'показать записи' }}
                     </button>
 
                     <template v-if="view === 'table'">
@@ -48,63 +48,60 @@
 
                 <pre v-if="view === 'json'" class="overflow-x-auto text-xs font-mono"><code v-html="highlightedJson"></code></pre>
 
-                <div v-else class="overflow-x-auto">
-                    <table class="w-full min-w-max border-collapse text-xs">
-                        <thead>
-                            <tr class="border-b border-border text-left text-comment">
-                                <th class="px-2 py-1.5 font-normal">#</th>
-                                <th class="px-2 py-1.5 font-normal">conf</th>
-                                <th class="px-2 py-1.5 font-normal">id</th>
-                                <th class="px-2 py-1.5 font-normal">raw_address</th>
-                                <th
-                                    v-for="field in EDITABLE"
-                                    :key="field"
-                                    class="px-2 py-1.5 font-normal"
-                                >
-                                    {{ field }}
-                                </th>
-                            </tr>
-                        </thead>
+                <div v-else class="flex flex-col gap-2">
+                    <div
+                        v-for="row in visibleRows"
+                        :key="row.uid"
+                        class="rounded border p-2.5 transition"
+                        :class="isLow(row.rec.confidence)
+                            ? 'border-yellow-500/30 bg-yellow-500/5'
+                            : 'border-border/50'"
+                    >
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                            <span class="text-comment">#{{ row.uid + 1 }}</span>
 
-                        <tbody>
-                            <tr
-                                v-for="(row, i) in visibleRows"
-                                :key="i"
-                                class="border-b border-border/50 align-top"
-                                :class="isLow(row.rec.confidence) ? 'bg-yellow-500/5' : ''"
+                            <label class="flex items-center gap-1.5">
+                                <span class="text-comment">conf</span>
+                                <input
+                                    v-model="row.rec.confidence"
+                                    :class="[cellClass, confClass, isDirty(row, 'confidence') ? 'border-primary/70' : '']"
+                                    title="confidence — можно править"
+                                />
+                            </label>
+
+                            <span class="text-muted-foreground">id: {{ row.rec.id ?? '—' }}</span>
+
+                            <span
+                                class="min-w-0 flex-1 truncate font-mono text-foreground/80"
+                                :title="String(row.rec.raw_address ?? '')"
                             >
-                                <td class="px-2 py-1.5 text-comment">{{ rowNumber(row) }}</td>
+                                {{ row.rec.raw_address ?? '—' }}
+                            </span>
 
-                                <td class="px-2 py-1.5">
-                                    <span
-                                        class="rounded-sm px-1.5 py-0.5 font-mono"
-                                        :class="isLow(row.rec.confidence)
-                                            ? 'bg-yellow-500/15 text-yellow-500'
-                                            : 'bg-primary/10 text-primary'"
-                                    >
-                                        {{ Number(row.rec.confidence ?? 0).toFixed(2) }}
-                                    </span>
-                                </td>
+                            <span
+                                v-if="isLow(row.rec.confidence)"
+                                class="rounded-sm bg-yellow-500/15 px-1.5 py-0.5 text-yellow-500"
+                            >
+                                низкий confidence
+                            </span>
+                        </div>
 
-                                <td class="px-2 py-1.5 font-mono text-muted-foreground">{{ row.rec.id ?? '—' }}</td>
+                        <div class="mt-2 flex flex-wrap gap-1.5">
+                            <label
+                                v-for="field in EDITABLE"
+                                :key="field"
+                                class="flex flex-col gap-0.5"
+                            >
+                                <span class="text-[10px] leading-none text-comment">{{ field }}</span>
 
-                                <td
-                                    class="max-w-xs truncate px-2 py-1.5 font-mono text-foreground/80"
-                                    :title="String(row.rec.raw_address ?? '')"
-                                >
-                                    {{ row.rec.raw_address ?? '—' }}
-                                </td>
-
-                                <td v-for="field in EDITABLE" :key="field" class="px-1 py-1">
-                                    <input
-                                        v-model="row.rec[field]"
-                                        :class="[cellClass, isDirty(row, field) ? 'border-primary/70' : '']"
-                                        :title="isDirty(row, field) ? 'изменено вручную' : field"
-                                    />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                <input
+                                    v-model="row.rec[field]"
+                                    :class="[cellClass, isDirty(row, field) ? 'border-primary/70' : '']"
+                                    :title="isDirty(row, field) ? 'изменено вручную' : field"
+                                />
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </template>
         </Panel>
@@ -132,7 +129,9 @@ const EDITABLE = [
 ];
 
 const cellClass =
-    'w-28 rounded border border-border bg-background px-1.5 py-1 text-xs font-mono text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-ring';
+    'w-24 rounded border border-border bg-background px-1.5 py-1 text-xs font-mono text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-ring';
+
+const confClass = 'w-16 text-center';
 
 const rows = ref([]);
 const view = ref('table');
@@ -142,17 +141,19 @@ const isSingle = computed(() => props.data !== null && !Array.isArray(props.data
 
 const cloneRecords = () => {
     const list = isSingle.value ? [props.data] : (Array.isArray(props.data) ? props.data : []);
-    const clean = list.map((rec) => {
+    // пустую строку экспортируем обратно в null, как отвечает API
+    const toEditable = (rec) => {
         const out = { ...rec };
-        // пустую строку экспортируем обратно в null, как отвечает API
-        for (const field of ['province', 'city', 'district', 'living_area', 'street_type',
-            'street_name', 'house', 'apartment', 'entrance', 'floor', 'landmark']) {
+        for (const field of EDITABLE) {
             if (out[field] == null) out[field] = '';
         }
         return out;
-    });
+    };
 
-    return clean.map((rec) => ({ rec, orig: JSON.parse(JSON.stringify(rec)) }));
+    return list.map((rec, i) => {
+        const editable = toEditable(rec);
+        return { uid: i, rec: editable, orig: JSON.parse(JSON.stringify(editable)) };
+    });
 };
 
 watch(() => props.data, () => {
@@ -171,19 +172,12 @@ const visibleRows = computed(() =>
 const isDirty = (row, field) => row.rec[field] !== row.orig[field];
 
 const editedCount = computed(() =>
-    rows.value.reduce((n, row) => n + EDITABLE.filter((f) => isDirty(row, f)).length, 0)
+    rows.value.reduce((n, row) => n + EDITABLE.filter((f) => isDirty(row, f)).length
+        + (isDirty(row, 'confidence') ? 1 : 0), 0)
 );
 
-const rowNumberMap = computed(() => {
-    const map = new WeakMap();
-    rows.value.forEach((row, i) => map.set(row, i + 1));
-    return map;
-});
-
-const rowNumber = (row) => rowNumberMap.value.get(row);
-
 const reset = () => {
-    rows.value = rows.value.map((row) => ({ rec: JSON.parse(JSON.stringify(row.orig)), orig: row.orig }));
+    rows.value = rows.value.map((row) => ({ uid: row.uid, rec: JSON.parse(JSON.stringify(row.orig)), orig: row.orig }));
 };
 
 const toExport = (rec) => {
@@ -191,6 +185,10 @@ const toExport = (rec) => {
     for (const field of EDITABLE) {
         if (out[field] === '') out[field] = null;
     }
+
+    const conf = Number(out.confidence);
+    out.confidence = Number.isFinite(conf) ? conf : 0;
+
     return out;
 };
 

@@ -8,11 +8,7 @@
         </h1>
 
         <p class="mt-6 max-w-2xl text-muted-foreground">
-            Разбираем 
-            <span class="random-address">
-                <span>п</span><span>р</span><span>о</span><span>и</span><span>з</span><span>в</span><span>о</span><span>л</span><span>ь</span><span>н</span><span>ы</span><span class="mr-2">й</span>
-                <span>а</span><span>д</span><span>р</span><span>е</span><span>с</span>
-            </span> 
+            Разбираем <span class="text-primary">произвольный адрес</span>
             на область, город, район, улицу, дом, квартиру, подъезд и этаж.
         </p>
 

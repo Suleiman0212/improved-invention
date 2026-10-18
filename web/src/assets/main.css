@@ -104,29 +104,3 @@
     opacity: 0;
   }
 }
-
-.random-address {
-  letter-spacing: 2px;
-  font-size: 17px;
-}
-.random-address span {
-  display: inline-block;
-  font-family: cursive;
-}
-
-.random-address span:nth-child(2n) {
-  transform: translateY(-2px) rotate(-6deg);
-  opacity: 0.9;
-}
-
-.random-address span:nth-child(3n) {
-  transform: translateY(1px) rotate(8deg);
-  letter-spacing: 2px;
-  color: #00ff66;
-  opacity: 0.9;
-}
-
-.random-address span:nth-child(5n) {
-  transform: translateY(-2px) rotate(-12deg);
-  filter: blur(0.3px);
-}
