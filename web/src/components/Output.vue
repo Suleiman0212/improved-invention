@@ -10,94 +10,118 @@
             </div>
 
             <template v-else-if="data">
-                <div class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
-                    <button @click="download" :class="btnClass">download json</button>
-
-                    <button
-                        type="button"
-                        @click="view = view === 'table' ? 'json' : 'table'"
-                        class="cursor-pointer text-comment transition hover:text-primary"
-                    >
-                        // {{ view === 'table' ? 'показать как JSON' : 'показать записи' }}
-                    </button>
-
-                    <template v-if="view === 'table'">
-                        <label class="flex cursor-pointer items-center gap-1.5 text-comment">
+                <div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-background/60 p-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="rounded bg-secondary px-2.5 py-1 text-xs text-secondary-foreground">
+                            {{ rows.length }} {{ isSingle ? 'запись' : 'записей' }}
+                        </span>
+                        <span
+                            v-if="lowCount"
+                            class="rounded bg-yellow-500/10 px-2.5 py-1 text-xs text-yellow-400"
+                        >
+                            {{ lowCount }} с низкой уверенностью
+                        </span>
+                        <label
+                            v-if="view === 'table'"
+                            class="flex cursor-pointer items-center gap-2 rounded border border-border/70 px-2.5 py-1.5 text-xs text-muted-foreground transition hover:border-yellow-500/40 hover:text-foreground"
+                        >
                             <input
                                 type="checkbox"
                                 v-model="onlyLow"
                                 class="h-3.5 w-3.5 accent-yellow-500"
                             />
-                            только низкий confidence (&lt; {{ LOW_CONF }})
+                            Только низкий confidence (&lt; {{ LOW_CONF }})
                         </label>
+                    </div>
 
-                        <span class="text-comment">
-                            записей: {{ rows.length }}<template v-if="lowCount">, с низким confidence: {{ lowCount }}</template>
-                        </span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            @click="view = view === 'table' ? 'json' : 'table'"
+                            class="cursor-pointer rounded border border-border px-3 py-2 text-xs text-muted-foreground transition hover:border-primary/50 hover:text-primary"
+                        >
+                            {{ view === 'table' ? 'Показать JSON' : 'Показать записи' }}
+                        </button>
+                        <button @click="download" :class="btnClass">Скачать JSON</button>
 
                         <button
-                            v-if="editedCount"
+                            v-if="view === 'table' && editedCount"
                             type="button"
                             @click="reset"
-                            class="cursor-pointer text-comment transition hover:text-destructive"
+                            class="cursor-pointer rounded border border-destructive/30 px-3 py-2 text-xs text-destructive transition hover:border-destructive hover:bg-destructive/10"
                         >
-                            // отменить правки ({{ editedCount }})
+                            Сбросить изменения ({{ editedCount }})
                         </button>
-                    </template>
+                    </div>
                 </div>
 
                 <pre v-if="view === 'json'" class="overflow-x-auto text-xs font-mono"><code v-html="highlightedJson"></code></pre>
 
-                <div v-else class="flex flex-col gap-2">
+                <div
+                    v-else-if="onlyLow && visibleRows.length === 0"
+                    class="rounded-md border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground"
+                >
+                    Записей с низкой уверенностью не найдено.
+                </div>
+
+                <div v-else class="flex flex-col gap-3">
                     <div
                         v-for="row in visibleRows"
                         :key="row.uid"
-                        class="rounded border p-2.5 transition"
+                        class="rounded-md border p-4 transition"
                         :class="isLow(row.rec.confidence)
-                            ? 'border-yellow-500/30 bg-yellow-500/5'
-                            : 'border-border/50'"
+                            ? 'border-yellow-500/40 bg-yellow-500/[0.04]'
+                            : 'border-border/70 bg-card/70 hover:border-primary/30'"
                     >
-                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                            <span class="text-comment">#{{ row.uid + 1 }}</span>
+                        <div class="flex flex-wrap items-start justify-between gap-3">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="rounded bg-secondary px-2 py-1 text-xs font-bold text-secondary-foreground">
+                                    Запись #{{ row.uid + 1 }}
+                                </span>
+                                <span class="text-xs text-muted-foreground">
+                                    ID <span class="font-mono text-foreground">{{ row.rec.id ?? '—' }}</span>
+                                </span>
+                                <span
+                                    v-if="isLow(row.rec.confidence)"
+                                    class="rounded bg-yellow-500/10 px-2 py-1 text-xs text-yellow-400"
+                                >
+                                    Низкая уверенность
+                                </span>
+                            </div>
 
-                            <label class="flex items-center gap-1.5">
-                                <span class="text-comment">conf</span>
+                            <label class="flex items-center gap-2 rounded border border-border/70 px-2.5 py-1.5 text-xs">
+                                <span class="text-muted-foreground">Уверенность</span>
                                 <input
                                     v-model="row.rec.confidence"
                                     :class="[cellClass, confClass, isDirty(row, 'confidence') ? 'border-primary/70' : '']"
-                                    title="confidence — можно править"
+                                    title="Уверенность — можно изменить"
                                 />
                             </label>
+                        </div>
 
-                            <span class="text-muted-foreground">id: {{ row.rec.id ?? '—' }}</span>
-
-                            <span
-                                class="min-w-0 flex-1 truncate font-mono text-foreground/80"
+                        <div class="mt-3 rounded bg-background/60 px-3 py-2.5">
+                            <div class="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Исходный адрес</div>
+                            <div
+                                class="break-words text-sm text-foreground"
                                 :title="String(row.rec.raw_address ?? '')"
                             >
                                 {{ row.rec.raw_address ?? '—' }}
-                            </span>
-
-                            <span
-                                v-if="isLow(row.rec.confidence)"
-                                class="rounded-sm bg-yellow-500/15 px-1.5 py-0.5 text-yellow-500"
-                            >
-                                низкий confidence
-                            </span>
+                            </div>
                         </div>
 
-                        <div class="mt-2 flex flex-wrap gap-1.5">
+                        <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                             <label
                                 v-for="field in EDITABLE"
                                 :key="field"
-                                class="flex flex-col gap-0.5"
+                                class="flex min-w-0 flex-col gap-1"
                             >
-                                <span class="text-[10px] leading-none text-comment">{{ field }}</span>
+                                <span class="text-[10px] uppercase tracking-wide text-muted-foreground">{{ field.replaceAll('_', ' ') }}</span>
 
                                 <input
                                     v-model="row.rec[field]"
                                     :class="[cellClass, isDirty(row, field) ? 'border-primary/70' : '']"
                                     :title="isDirty(row, field) ? 'изменено вручную' : field"
+                                    :placeholder="field"
                                 />
                             </label>
                         </div>
@@ -129,7 +153,7 @@ const EDITABLE = [
 ];
 
 const cellClass =
-    'w-24 rounded border border-border bg-background px-1.5 py-1 text-xs font-mono text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-ring';
+    'w-full min-w-0 rounded border border-border bg-background px-2.5 py-2 text-xs font-mono text-foreground outline-none transition focus:border-primary focus:ring-1 focus:ring-ring';
 
 const confClass = 'w-16 text-center';
 
